@@ -16,10 +16,10 @@ class NewBrowser:
         self.browser = browser
 
     def given_opened(self):
-        self.browser.open('https://demoqa.com/automation-practice-form')
-        ads = ss('[id^=google_ads][id$=container__]')
-        if ads.with_(timeout=10).wait.until(have.size_greater_than_or_equal(3)):
-            ads.perform(command.js.remove)
+        self.browser.open("https://demoqa.com/automation-practice-form")
+        self.browser.element(".practice-form-wrapper").should(have.text("Student Registration Form"))
+        self.browser.driver.execute_script("$('footer').remove()")
+        self.browser.driver.execute_script("$('#fixedban').remove()")
 
     @allure.step("Добавить предметы {values}")
     def add_subjects(self, values: Tuple[Subject]):
@@ -48,7 +48,7 @@ class NewBrowser:
 
     @allure.step("Проверка данных")
     def should_have_submitted(self, data):
-        rows = modal.dialog.all('tbody tr')
+        rows = self.browser.element('.modal-content').all('tbody tr')
         for row, value in data:
             rows.element_by(have.text(row)).all('td')[1].should(have.exact_text(value))
 
@@ -62,7 +62,7 @@ class NewBrowser:
 
     @allure.step("Установить дату  в {day}-{month}-{year}")
     def set_date(self, month, year, day):
-        date.date_picker(month, year, day)
+        date.date_picker(month, year, day, self)
 
     @allure.step("Отправить файл {file}")
     def send_file(self, file):
