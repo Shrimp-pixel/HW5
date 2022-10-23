@@ -16,7 +16,7 @@ class NewBrowser:
         self.browser = browser
 
     def given_opened(self):
-        self.browser.open('/automation-practice-form')
+        self.browser.open('https://demoqa.com/automation-practice-form')
         ads = ss('[id^=google_ads][id$=container__]')
         if ads.with_(timeout=10).wait.until(have.size_greater_than_or_equal(3)):
             ads.perform(command.js.remove)
