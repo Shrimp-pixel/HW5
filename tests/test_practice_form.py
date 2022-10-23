@@ -1,56 +1,81 @@
-import os
+from time import sleep
 
+from selene import have, command
 from selene.support.shared import browser
-from selene import have
+from demoqa_tests.model import app
+from demoqa_tests.model.pages import registration_form
+from demoqa_tests.model.pages.registration_form import (
+    given_opened,
+)
+from demoqa_tests.utils import path
+from tests.test_data.users import yuri
 
 
-def test_submit_practice_form():
-    browser.config.base_url = 'https://demoqa.com'
+def test_fail_to_submit_form():
+    given_opened()
 
-    browser.open('/automation-practice-form')
-    browser.should(have.title('ToolsQA'))
-    browser.element('.main-header').should(have.text('Practice Form'))
+    # todo: implement
 
-    browser.element('#firstName').type('John')
-    browser.element('#lastName').type('Smith')
-    browser.element('#userEmail').type('example@ex.com')
-    browser.element('.custom-control.custom-radio.custom-control-inline').click()
-    browser.element('#userNumber').type('7911325783')
 
-    browser.element('#dateOfBirthInput').click()
-    browser.element('.react-datepicker__month-select').click().element('[value="1"]').click()
-    browser.element('.react-datepicker__year-select').click().element('[value="2004"]').click()
-    browser.element('.react-datepicker__day.react-datepicker__day--004').click()
+def test_submit_student_registration_form():
 
-    subject_input = browser.element('#subjectsInput')
-    subject_input.type('M').press_enter()
-    subject_input.type('E').press_enter()
+    app.registration_form.given_opened()
 
-    browser.element('.custom-control.custom-checkbox.custom-control-inline').click()
+    # WHEN
+    registration_form.set_field('#firstName', yuri.name)
+    registration_form.set_field('#lastName', yuri.last_name)
+    registration_form.set_field('#userEmail', yuri.email)
 
-    browser.element('#uploadPicture').send_keys(os.path.abspath('../blue.jpg'))
-    browser.element('#currentAddress').type("Mr John Smith\n"
-                                            "132, My Street,\n"
-                                            "Kingston, New York 12401\n"
-                                            "United States\n")
+    registration_form.set_gender(yuri.gender.value)
 
-    browser.element('#react-select-3-input').type('N').press_enter()
-    browser.element('#react-select-4-input').type('G').press_enter()
-    browser.element('#submit').press_enter()
+    '''
+    # OR
+    gender_male = browser.element('[for=gender-radio-1]')
+    gender_male.click()
+    # OR
+    browser.element('[id^=gender-radio][value=Male]').perform(command.js.click)
+    browser.element('[id^=gender-radio][value=Male]').element(
+        './following-sibling::*'
+    ).click()
+    # OR better:
+    browser.element('[id^=gender-radio][value=Male]').element('..').click()
+    # OR
+    browser.all('[id^=gender-radio]').element_by(have.value('Male')).element('..').click()
+    browser.all('[id^=gender-radio]').by(have.value('Male')).first.element('..').click()
+    '''
 
-    browser.element('.modal-body').all('tbody tr').should(have.texts(
-        'John Smith',
-        'example@ex.com',
-        'Male',
-        '7911325783',
-        '04 February,2004',
-        'Maths, English',
-        'Sports',
-        'blue.jpg',
-        'Mr John Smith 132, My Street, Kingston, New York 12401 United States',
-        'NCR Gurgaon'
-    ))
+    registration_form.set_field('#userNumber', yuri.user_number)
 
+    registration_form.set_date(yuri.birth_month, yuri.birth_year, yuri.birth_day)
+    '''
+    # OR something like
+    browser.element('#dateOfBirthInput').send_keys(Keys.CONTROL, 'a').type('28 Mar 1995').press_enter()
+    '''
+
+    registration_form.add_subjects(yuri.subjects)
+
+    registration_form.set_hobbies(yuri.hobbies)
+
+    registration_form.send_file(yuri.picture_file)
+
+    registration_form.set_field('#currentAddress', yuri.current_address)
+
+    registration_form.scroll_to_bottom()
+
+    registration_form.set_state_by_typing(yuri.state)
+    registration_form.set_city_by_typing(yuri.city)
+    sleep(5)
+    registration_form.submit()
+
+    # THEN
+
+    registration_form.should_have_submitted(
+        [
+            ('Student Name', f'{yuri.name} {yuri.last_name}'),
+            ('Student Email', yuri.email),
+            ('Gender', yuri.gender.value),
+        ],
+    )
 
 
 
