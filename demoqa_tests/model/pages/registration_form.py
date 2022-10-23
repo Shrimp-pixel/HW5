@@ -1,75 +1,80 @@
 from typing import Tuple
 
 from selene import have, command
-from selene.support.shared import browser
+
 from selene.support.shared.jquery_style import ss
 
 from demoqa_tests.model.controls import dropdown, modal, date
 from tests.test_data.users import Subject
 from demoqa_tests.utils import path
-
-state = browser.element('#state')
-
-
-def given_opened():
-    browser.open('/automation-practice-form')
-    ads = ss('[id^=google_ads][id$=container__]')
-    if ads.with_(timeout=10).wait.until(have.size_greater_than_or_equal(3)):
-        ads.perform(command.js.remove)
+import allure
+from allure_commons.types import Severity
 
 
-def add_subjects(values: Tuple[Subject]):
-    for subject in values:
-        browser.element('#subjectsInput').type(subject.value).press_enter()
+class NewBrowser:
+    def __init__(self, browser):
+        self.browser = browser
 
+    def given_opened(self):
+        self.browser.open('/automation-practice-form')
+        ads = ss('[id^=google_ads][id$=container__]')
+        if ads.with_(timeout=10).wait.until(have.size_greater_than_or_equal(3)):
+            ads.perform(command.js.remove)
 
-def set_state(value: str):
-    dropdown.select(state, value)
+    @allure.step("Добавить предметы {values}")
+    def add_subjects(self, values: Tuple[Subject]):
+        for subject in values:
+            self.browser.element('#subjectsInput').type(subject.value).press_enter()
 
+    @allure.step("Установить город {value}")
+    def set_state(self, value: str):
+        dropdown.select(self.browser.element('#state'), value)
 
-def set_city(value: str):
-    dropdown.select(browser.element('#city'), value)
+    @allure.step("Установить страну {value}")
+    def set_city(self, value: str):
+        dropdown.select(self.browser.element('#city'), value)
 
+    @allure.step("Установить страну {value}")
+    def set_state_by_typing(self, value: str):
+        dropdown.select_by_typing(self.browser.element('#react-select-3-input'), value)
 
-def set_state_by_typing(value: str):
-    dropdown.select_by_typing(browser.element('#react-select-3-input'), value)
+    @allure.step("Установить город {value}")
+    def set_city_by_typing(self, value: str):
+        dropdown.select_by_typing(self.browser.element('#react-select-4-input'), value)
 
+    @allure.step("Промотать вниз")
+    def scroll_to_bottom(self):
+        self.browser.element('#state').perform(command.js.scroll_into_view)
 
-def set_city_by_typing(value: str):
-    dropdown.select_by_typing(browser.element('#react-select-4-input'), value)
+    @allure.step("Проверка данных")
+    def should_have_submitted(self, data):
+        rows = modal.dialog.all('tbody tr')
+        for row, value in data:
+            rows.element_by(have.text(row)).all('td')[1].should(have.exact_text(value))
 
-def scroll_to_bottom():
-    state.perform(command.js.scroll_into_view)
+    @allure.step("Установить {selector} в значение {text}")
+    def set_field(self, selector, text):
+        self.browser.element(selector).type(text)
 
+    @allure.step("Установить значение gender в {gender}")
+    def set_gender(self, gender):
+        self.browser.all('[for^=gender-radio]').by(have.exact_text(gender)).first.click()
 
-def should_have_submitted(data):
-    rows = modal.dialog.all('tbody tr')
-    for row, value in data:
-        rows.element_by(have.text(row)).all('td')[1].should(have.exact_text(value))
+    @allure.step("Установить дату  в {day}-{month}-{year}")
+    def set_date(self, month, year, day):
+        date.date_picker(month, year, day)
 
+    @allure.step("Отправить файл {file}")
+    def send_file(self, file):
+        self.browser.element('[id="uploadPicture"]').send_keys(
+            path.to_resource(file)
+        )
 
-def set_field(selector, text):
-    browser.element(selector).type(text)
+    @allure.step("Установить hobbies {hobbies}")
+    def set_hobbies(self, hobbies):
+        for hobby in hobbies:
+            self.browser.all('[id^=hobbies]').by(have.value(hobby.value)).first.element('..').click()
 
-
-def set_gender(gender):
-    browser.all('[for^=gender-radio]').by(have.exact_text(gender)).first.click()
-
-
-def set_date(month, year, day):
-    date.date_picker(month, year, day)
-
-
-def send_file(file):
-    browser.element('[id="uploadPicture"]').send_keys(
-        path.to_resource(file)
-    )
-
-
-def set_hobbies(hobbies):
-    for hobby in hobbies:
-        browser.all('[id^=hobbies]').by(have.value(hobby.value)).first.element('..').click()
-
-
-def submit():
-    browser.element('#submit').perform(command.js.click)
+    @allure.step("Нажать отправить")
+    def submit(self):
+        self.browser.element('#submit').perform(command.js.click)

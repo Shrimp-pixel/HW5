@@ -1,32 +1,21 @@
 from time import sleep
 
-from selene import have, command
-from selene.support.shared import browser
 from demoqa_tests.model import app
-from demoqa_tests.model.pages import registration_form
-from demoqa_tests.model.pages.registration_form import (
-    given_opened,
-)
-from demoqa_tests.utils import path
+from demoqa_tests.model.pages.registration_form import NewBrowser
 from tests.test_data.users import yuri
+from demoqa_tests.utils import attach
 
 
-def test_fail_to_submit_form():
-    given_opened()
-
-    # todo: implement
-
-
-def test_submit_student_registration_form():
-
-    app.registration_form.given_opened()
+def test_submit_student_nb(setup_browser):
+    nb = NewBrowser(setup_browser)
+    nb.given_opened()
 
     # WHEN
-    registration_form.set_field('#firstName', yuri.name)
-    registration_form.set_field('#lastName', yuri.last_name)
-    registration_form.set_field('#userEmail', yuri.email)
+    nb.set_field('#firstName', yuri.name)
+    nb.set_field('#lastName', yuri.last_name)
+    nb.set_field('#userEmail', yuri.email)
 
-    registration_form.set_gender(yuri.gender.value)
+    nb.set_gender(yuri.gender.value)
 
     '''
     # OR
@@ -44,49 +33,37 @@ def test_submit_student_registration_form():
     browser.all('[id^=gender-radio]').by(have.value('Male')).first.element('..').click()
     '''
 
-    registration_form.set_field('#userNumber', yuri.user_number)
+    nb.set_field('#userNumber', yuri.user_number)
 
-    registration_form.set_date(yuri.birth_month, yuri.birth_year, yuri.birth_day)
+    nb.set_date(yuri.birth_month, yuri.birth_year, yuri.birth_day)
     '''
     # OR something like
     browser.element('#dateOfBirthInput').send_keys(Keys.CONTROL, 'a').type('28 Mar 1995').press_enter()
     '''
 
-    registration_form.add_subjects(yuri.subjects)
+    nb.add_subjects(yuri.subjects)
 
-    registration_form.set_hobbies(yuri.hobbies)
+    nb.set_hobbies(yuri.hobbies)
 
-    registration_form.send_file(yuri.picture_file)
+    nb.send_file(yuri.picture_file)
 
-    registration_form.set_field('#currentAddress', yuri.current_address)
+    nb.set_field('#currentAddress', yuri.current_address)
 
-    registration_form.scroll_to_bottom()
+    nb.scroll_to_bottom()
 
-    registration_form.set_state_by_typing(yuri.state)
-    registration_form.set_city_by_typing(yuri.city)
+    nb.set_state_by_typing(yuri.state)
+    nb.set_city_by_typing(yuri.city)
     sleep(5)
-    registration_form.submit()
+    nb.submit()
 
     # THEN
 
-    registration_form.should_have_submitted(
+    nb.should_have_submitted(
         [
             ('Student Name', f'{yuri.name} {yuri.last_name}'),
             ('Student Email', yuri.email),
             ('Gender', yuri.gender.value),
         ],
     )
-
-
-
-
-
-
-
-
-
-
-
-
 
 #    browser.element('#submit').click()
