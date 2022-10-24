@@ -63,6 +63,13 @@ def test_submit_student_nb(setup_browser):
             ('Student Name', f'{yuri.name} {yuri.last_name}'),
             ('Student Email', yuri.email),
             ('Gender', yuri.gender.value),
+            ('Mobile', yuri.user_number),
+            ('Date of Birth', f'{yuri.birth_day} {yuri.birth_month},{yuri.birth_year}'),
+            ('Subjects', 'History'),
+            ('Hobbies', 'Sports'),
+            ('Picture', yuri.picture_file),
+            ('Address', yuri.current_address),
+            ('State and City', f'{yuri.state} {yuri.city}'),
         ],
     )
 
