@@ -9,7 +9,8 @@ from demoqa_tests.utils import attach
 def test_submit_student_nb(setup_browser):
     nb = NewBrowser(setup_browser)
     nb.given_opened()
-
+    nb.fill_form(yuri).submit()
+    """
     # WHEN
     nb.set_field('#firstName', yuri.name)
     nb.set_field('#lastName', yuri.last_name)
@@ -54,7 +55,7 @@ def test_submit_student_nb(setup_browser):
     nb.set_state_by_typing(yuri.state)
     nb.set_city_by_typing(yuri.city)
     sleep(5)
-    nb.submit()
+    nb.submit()"""
 
     # THEN
 
